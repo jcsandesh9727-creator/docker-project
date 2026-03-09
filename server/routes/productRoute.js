@@ -9,7 +9,7 @@ router.get('/wishlist', authMiddleware, (req, res) => {
             id: 1,
             name: 'Sample Product 1',
             price: 29.99,
-            description: 'This is a sample product for the wishlist.'
+            description: 'This is a sample product for the wishlist..'
         },
         {
             id: 2,
