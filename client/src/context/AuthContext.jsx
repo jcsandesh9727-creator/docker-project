@@ -1,85 +1,62 @@
-import { createContext, useContext, useState } from "react";
-import axios from "axios";
+import { createContext, useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
+// ✅ CUSTOM HOOK
+export const useAuth = () => useContext(AuthContext);
+
+// ✅ PROVIDER
 export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const [user, setUser] = useState(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem("auth"));
-      return stored?.user || null;
-    } catch {
-      return null;
+  const navigate = useNavigate();
+
+  // ✅ LOAD FROM LOCAL STORAGE
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
+
+    if (storedUser && storedToken) {
+      setUser(JSON.parse(storedUser));
+      setToken(storedToken);
     }
-  });
 
-  const [token, setToken] = useState(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem("auth"));
-      return stored?.token || null;
-    } catch {
-      return null;
-    }
-  });
+    setLoading(false);
+  }, []);
 
-  const saveAuth = (userData, jwt) => {
+  // ✅ LOGIN FUNCTION
+  const login = (userData, token) => {
     setUser(userData);
-    setToken(jwt);
-    localStorage.setItem("auth", JSON.stringify({ user: userData, token: jwt }));
+    setToken(token);
+
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", token);
+
+    navigate("/dashboard");
   };
 
- 
-  const login = async (email, password) => {
-    try {
-      const res = await axios.post("/user/login", {
-        email,
-        password
-      }, {
-        withCredentials: true
-      });
-
-      const data = res.data;
-
-      if (data.status) {
-        saveAuth(data.user, data.token);
-        return { success: true };
-      }
-
-      return { success: false, message: data.message };
-
-    } catch (error) {
-      return { success: false, message: "Login failed" };
-    }
-  };
-
-
-  const register = async (name, email, password) => {
-    try {
-      const res = await axios.post("/user/signup", {
-        name,
-        email,
-        password
-      });
-
-      return res.data;
-
-    } catch (error) {
-      return { status: false, message: "Registration failed" };
-    }
-  };
-
+  // ✅ LOGOUT FUNCTION
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem("auth");
+
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+
+    navigate("/login");
   };
 
+  // ✅ CHECK AUTH
+  const isAuthenticated = () => !!token;
+
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, token, login, logout, isAuthenticated, loading }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);

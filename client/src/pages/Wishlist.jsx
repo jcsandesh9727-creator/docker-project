@@ -1,42 +1,62 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function Wishlist() {
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchWishlist = async () => {
-            try {
-                const response = await axios.get('/product/wishlist');
-                setProducts(response.data);
-            } catch (err) {
-                setError('Failed to load wishlist');
-            } finally {
-                setLoading(false);
-            }
-        };
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-        fetchWishlist();
-    }, []);
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
+  useEffect(() => {
 
-    return (
-        <div>
-            <h1>Wishlist</h1>
-            <p>This is a protected page.</p>
-            <div>
-                {products.map(product => (
-                    <div key={product.id} style={{ border: '1px solid #ccc', margin: '10px', padding: '10px' }}>
-                        <h3>{product.name}</h3>
-                        <p>{product.description}</p>
-                        <p>Price: ${product.price}</p>
-                    </div>
-                ))}
-            </div>
+    const fetchWishlist = async () => {
+
+      try {
+
+        const response = await axios.get("/product/wishlist");
+
+        setProducts(response.data);
+
+      } catch (err) {
+        
+        toast.error(err.message);
+
+      } finally {
+        setLoading(false);
+      }
+
+    };
+
+    fetchWishlist();
+
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+
+  return (
+    <div>
+      <h1>Wishlist</h1>
+
+      {products.map((product) => (
+        <div key={product.id} style={{border:"1px solid #ccc", margin:"10px", padding:"10px"}}>
+
+          <h3>{product.name}</h3>
+          <p>{product.description}</p>
+          <p>Price: ${product.price}</p>
+
         </div>
-    );
+      ))}
+    </div>
+  );
 }
+
+
+
+
+
+
+
+
+
